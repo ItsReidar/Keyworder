@@ -1,0 +1,348 @@
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/GoogleSans-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../fonts/GoogleSans-Medium.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('../fonts/GoogleSans-SemiBold.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/GoogleSans-Bold.ttf') format('truetype');
+}
+
+:root {
+  --bg-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-color: #333333;
+  --text-muted: #5f6368;
+  --border-color: #eeeeee;
+  --input-border: #dadce0;
+  --input-bg: #ffffff;
+  --input-focus: #1a73e8;
+  --primary-btn: #1a73e8;
+  --primary-btn-hover: #1557b0;
+  --secondary-btn-bg: #f1f3f4;
+  --secondary-btn-border: #dadce0;
+  --secondary-btn-hover: #e8eaed;
+  --list-border: #f8f9fa;
+  --edit-hover: #e8f0fe;
+  --del-hover: #fce8e6;
+  --heading-color: #202124;
+}
+
+body.dark-mode {
+  --bg-color: #171717;
+  --card-bg: #212121;
+  --text-color: #e8eaed;
+  --text-muted: #9aa0a6;
+  --border-color: #333333;
+  --input-border: #444444;
+  --input-bg: #2b2b2b;
+  --input-focus: #8ab4f8;
+  --primary-btn: #8ab4f8;
+  --primary-btn-hover: #aecbfa;
+  --secondary-btn-bg: #2b2b2b;
+  --secondary-btn-border: #444444;
+  --secondary-btn-hover: #3c4043;
+  --list-border: #333333;
+  --edit-hover: #3c4043;
+  --del-hover: #3c4043;
+  --heading-color: #e8eaed;
+}
+
+body {
+  width: 320px;
+  font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 12px;
+  margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+h3 {
+  margin: 0;
+  color: var(--heading-color);
+  transition: color 0.3s ease;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--heading-color);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: auto;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.icon-btn:hover {
+  background-color: var(--secondary-btn-hover);
+  color: var(--text-color);
+}
+
+h4 {
+  margin: 10px 0 6px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: color 0.3s ease;
+}
+
+.section {
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  margin-bottom: 8px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--input-focus);
+}
+
+button {
+  background-color: var(--primary-btn);
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--primary-btn-hover);
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.secondary-btn {
+  background-color: var(--secondary-btn-bg);
+  color: var(--primary-btn);
+  border: 1px solid var(--secondary-btn-border);
+}
+
+body.dark-mode button {
+  color: #202124;
+}
+
+body.dark-mode .icon-btn {
+  color: var(--heading-color);
+}
+
+body.dark-mode .secondary-btn {
+  color: var(--primary-btn);
+}
+
+.secondary-btn:hover {
+  background-color: var(--secondary-btn-hover);
+}
+
+#bookmark-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  margin-right: 8px;
+  user-select: none;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.folder-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  border-bottom: 1px solid var(--list-border);
+}
+
+.folder-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  background-color: var(--card-bg);
+  cursor: pointer;
+}
+
+.folder-toggle {
+  margin-right: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.folder-item.open > .folder-header .folder-toggle {
+  transform: rotate(90deg);
+}
+
+.folder-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--heading-color);
+  flex-grow: 1;
+}
+
+.folder-content {
+  list-style: none;
+  padding: 0 0 0 20px;
+  margin: 0;
+  display: none;
+  min-height: 10px; /* target for drop */
+}
+
+.folder-item.open > .folder-content {
+  display: block;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+  background-color: var(--secondary-btn-hover);
+}
+
+.bookmark-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--list-border);
+  transition: border-color 0.3s ease;
+  background-color: var(--card-bg);
+}
+
+.bookmark-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-right: 8px;
+}
+
+.bookmark-keyword {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--heading-color);
+  transition: color 0.3s ease;
+}
+
+.bookmark-url {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+  transition: color 0.3s ease;
+}
+
+.bookmark-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.edit-btn {
+  background-color: transparent;
+  color: var(--primary-btn);
+  border: 1px solid var(--primary-btn);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  border-radius: 6px;
+}
+
+body.dark-mode .edit-btn {
+  color: var(--primary-btn);
+  border-color: var(--primary-btn);
+}
+
+.edit-btn:hover {
+  background-color: var(--edit-hover);
+}
+
+.delete-btn {
+  background-color: transparent;
+  color: #ea4335;
+  border: 1px solid #ea4335;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode .delete-btn {
+  color: #f28b82;
+  border-color: #f28b82;
+}
+
+.delete-btn:hover {
+  background-color: var(--del-hover);
+}
+
+#save-status {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  height: 14px; /* fixed height so UI doesn't jump */
+}
