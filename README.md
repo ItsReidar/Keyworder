@@ -31,5 +31,11 @@ Now, whenever you want to open Google Maps, simply:
 ## Screenshots
 
 ![Screenshot 1](images/screenhot1.png)
+
+---
+
 ![Screenshot 2](images/screenshot2.png)
+
+---
+
 ![Screenshot 3](images/screenshot3.png)
