@@ -2,17 +2,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const keywordInput = document.getElementById('keyword-input');
   const urlInput = document.getElementById('url-input');
   const folderSelect = document.getElementById('folder-select');
+  const searchInput = document.getElementById('search-input');
   const saveBtn = document.getElementById('save-btn');
   const saveStatus = document.getElementById('save-status');
   const bookmarkList = document.getElementById('bookmark-list');
   const exportBtn = document.getElementById('export-btn');
   const importBtn = document.getElementById('import-btn');
   const importFile = document.getElementById('import-file');
+  const importChromeBtn = document.getElementById('import-chrome-btn');
   const newFolderBtn = document.getElementById('new-folder-btn');
   const themeToggle = document.getElementById('theme-toggle');
   const moonIcon = document.getElementById('moon-icon');
   const sunIcon = document.getElementById('sun-icon');
+  const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
   let editingKeyword = null;
+  let selectedItems = new Set();
+
+  function updateBulkDeleteBtn() {
+    if (!bulkDeleteBtn) return;
+    if (selectedItems.size > 0) {
+      bulkDeleteBtn.style.display = 'block';
+      bulkDeleteBtn.textContent = `Delete Selected (${selectedItems.size})`;
+    } else {
+      bulkDeleteBtn.style.display = 'none';
+    }
+  }
 
   let state = {
     bookmarks: {},
@@ -131,8 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let currentRenderOp = null;
+
   function renderBookmarks() {
     bookmarkList.innerHTML = '';
+    const searchTerm = searchInput.value.trim().toLowerCase();
     
     if (state.structure.length === 0 && Object.keys(state.bookmarks).length === 0) {
       bookmarkList.innerHTML = '<li><span style="color:var(--text-muted);font-size:12px;padding:8px;">No bookmarks saved yet.</span></li>';
@@ -182,9 +199,30 @@ document.addEventListener('DOMContentLoaded', () => {
       delBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
       delBtn.title = 'Delete';
       delBtn.onclick = () => deleteBookmark(item.id);
+
+      const selectBtn = document.createElement('button');
+      selectBtn.className = 'select-btn' + (selectedItems.has(item.id) ? ' selected' : '');
+      selectBtn.innerHTML = selectedItems.has(item.id) 
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>';
+      selectBtn.title = 'Select';
+      selectBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (selectedItems.has(item.id)) {
+          selectedItems.delete(item.id);
+          selectBtn.classList.remove('selected');
+          selectBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>';
+        } else {
+          selectedItems.add(item.id);
+          selectBtn.classList.add('selected');
+          selectBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>';
+        }
+        updateBulkDeleteBtn();
+      };
       
       actionsDiv.appendChild(editBtn);
       actionsDiv.appendChild(delBtn);
+      actionsDiv.appendChild(selectBtn);
       
       li.appendChild(dragHandle);
       li.appendChild(infoDiv);
@@ -210,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const toggle = document.createElement('span');
       toggle.className = 'folder-toggle';
       toggle.innerHTML = '▶';
-      
+
       const nameSpan = document.createElement('span');
       nameSpan.className = 'folder-name';
       nameSpan.textContent = item.name;
@@ -241,10 +279,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       };
       
+      const selectFolderBtn = document.createElement('button');
+      selectFolderBtn.className = 'select-btn' + (selectedItems.has(item.id) ? ' selected' : '');
+      selectFolderBtn.innerHTML = selectedItems.has(item.id) 
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>';
+      selectFolderBtn.title = 'Select';
+      selectFolderBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (selectedItems.has(item.id)) {
+          selectedItems.delete(item.id);
+          selectFolderBtn.classList.remove('selected');
+          selectFolderBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>';
+        } else {
+          selectedItems.add(item.id);
+          selectFolderBtn.classList.add('selected');
+          selectFolderBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>';
+        }
+        updateBulkDeleteBtn();
+      };
+      
       const actionsDiv = document.createElement('div');
       actionsDiv.className = 'bookmark-actions';
       actionsDiv.appendChild(editFolderBtn);
       actionsDiv.appendChild(delFolderBtn);
+      actionsDiv.appendChild(selectFolderBtn);
       
       header.appendChild(dragHandle);
       header.appendChild(toggle);
@@ -260,30 +319,72 @@ document.addEventListener('DOMContentLoaded', () => {
       const contentUl = document.createElement('ul');
       contentUl.className = 'folder-content';
       
-      if (item.children) {
-        item.children.forEach(child => {
-           if (child.type === 'bookmark') {
-             const childNode = createBookmarkNode(child);
-             if (childNode) contentUl.appendChild(childNode);
-           }
-        });
-      }
-      
       li.appendChild(header);
       li.appendChild(contentUl);
-      return li;
+      return { li, contentUl };
     }
     
-    state.structure.forEach(item => {
-      let node = null;
-      if (item.type === 'bookmark') node = createBookmarkNode(item);
-      else if (item.type === 'folder') node = createFolderNode(item);
-      
-      if (node) bookmarkList.appendChild(node);
-    });
+    function* renderGenerator(structure, parentElement) {
+      for (let item of structure) {
+        if (item.type === 'bookmark') {
+          const node = createBookmarkNode(item);
+          if (node) parentElement.appendChild(node);
+          yield;
+        } else if (item.type === 'folder') {
+          const { li, contentUl } = createFolderNode(item);
+          parentElement.appendChild(li);
+          yield;
+          if (item.children && item.children.length > 0) {
+            yield* renderGenerator(item.children, contentUl);
+          }
+        }
+      }
+    }
     
-    initSortable();
-    updateFolderSelect();
+    function* renderSearchGenerator(parentElement) {
+      const matches = Object.entries(state.bookmarks).filter(([keyword, data]) => {
+        return keyword.includes(searchTerm) || data.url.toLowerCase().includes(searchTerm);
+      });
+      
+      if (matches.length === 0) {
+        parentElement.innerHTML = '<li><span style="color:var(--text-muted);font-size:12px;padding:8px;">No matches found.</span></li>';
+        return;
+      }
+      
+      for (let [keyword, data] of matches) {
+        const node = createBookmarkNode({ type: 'bookmark', id: keyword });
+        if (node) {
+          // Disable dragging when searching
+          const dragHandle = node.querySelector('.drag-handle');
+          if (dragHandle) dragHandle.style.display = 'none';
+          parentElement.appendChild(node);
+        }
+        yield;
+      }
+    }
+    
+    const op = {};
+    currentRenderOp = op;
+    const gen = searchTerm ? renderSearchGenerator(bookmarkList) : renderGenerator(state.structure, bookmarkList);
+    
+    function processChunk() {
+      if (currentRenderOp !== op) return; // Cancelled
+      
+      const start = performance.now();
+      while (performance.now() - start < 16) {
+        const { done } = gen.next();
+        if (done) {
+          if (!searchTerm) {
+            initSortable();
+          }
+          updateFolderSelect();
+          return;
+        }
+      }
+      requestAnimationFrame(processChunk);
+    }
+    
+    requestAnimationFrame(processChunk);
   }
 
   function initSortable() {
@@ -424,9 +525,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   keywordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveBtn.click(); });
   urlInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveBtn.click(); });
+  searchInput.addEventListener('input', () => { renderBookmarks(); });
 
   // Delete folder
-  function deleteFolder(folderId) {
+  function deleteFolderInternal(folderId) {
     function getKeysFromFolder(arr, targetId) {
       for (let item of arr) {
         if (item.type === 'folder' && item.id === targetId) {
@@ -460,12 +562,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     state.structure = removeFolder(state.structure);
-    
+  }
+
+  function deleteFolder(folderId) {
+    deleteFolderInternal(folderId);
+    selectedItems.delete(folderId);
+    updateBulkDeleteBtn();
     chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, renderBookmarks);
   }
 
-  // Delete bookmark
-  function deleteBookmark(keyword) {
+  // Delete bookmark internal
+  function deleteBookmarkInternal(keyword) {
     delete state.bookmarks[keyword];
     
     function removeBookmark(arr) {
@@ -478,8 +585,30 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
     state.structure = removeBookmark(state.structure);
-    
+  }
+
+  function deleteBookmark(keyword) {
+    deleteBookmarkInternal(keyword);
+    selectedItems.delete(keyword);
+    updateBulkDeleteBtn();
     chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, renderBookmarks);
+  }
+
+  if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener('click', () => {
+      if (confirm(`Are you sure you want to delete ${selectedItems.size} item(s)?`)) {
+        selectedItems.forEach(itemId => {
+          if (itemId.startsWith('folder_')) {
+            deleteFolderInternal(itemId);
+          } else {
+            deleteBookmarkInternal(itemId);
+          }
+        });
+        selectedItems.clear();
+        updateBulkDeleteBtn();
+        chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, renderBookmarks);
+      }
+    });
   }
 
   // Export JSON
@@ -570,6 +699,97 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     reader.readAsText(file);
   });
+
+  // Import Chrome Bookmarks
+  if (importChromeBtn) {
+    importChromeBtn.addEventListener('click', () => {
+      importChromeBtn.textContent = 'Importing...';
+      importChromeBtn.disabled = true;
+
+      chrome.bookmarks.getTree((bookmarkTreeNodes) => {
+        function generateUniqueKeyword(baseKeyword, url) {
+          let keyword = baseKeyword.toLowerCase().trim();
+          if (!keyword) keyword = 'bookmark';
+          
+          if (!state.bookmarks[keyword]) return keyword;
+          if (state.bookmarks[keyword].url === url) return keyword;
+
+          let counter = 2;
+          let newKeyword = `${keyword} ${counter}`;
+          while (state.bookmarks[newKeyword]) {
+            if (state.bookmarks[newKeyword].url === url) return newKeyword;
+            counter++;
+            newKeyword = `${keyword} ${counter}`;
+          }
+          return newKeyword;
+        }
+
+        function processNode(node, currentLevelArray) {
+          if (node.children) {
+            // It's a folder
+            // Skip the root folders themselves if we want to avoid top-level "Bookmarks Bar" grouping, 
+            // but let's keep them so the structure matches Chrome exactly.
+            let targetArray = currentLevelArray;
+            
+            // Don't create a folder for the absolute root node which has no title
+            if (node.id !== "0") {
+              const newFolder = {
+                type: 'folder',
+                id: 'folder_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                name: node.title || 'Imported Folder',
+                isOpen: false,
+                children: []
+              };
+              currentLevelArray.push(newFolder);
+              targetArray = newFolder.children;
+            }
+
+            for (let child of node.children) {
+              processNode(child, targetArray);
+            }
+          } else if (node.url) {
+            // It's a bookmark
+            const keyword = generateUniqueKeyword(node.title || 'bookmark', node.url);
+            
+            state.bookmarks[keyword] = {
+              url: node.url,
+              createdAt: new Date().toISOString()
+            };
+            
+            // Check if it already exists in the structure so we don't duplicate the entry visually
+            // (The generateUniqueKeyword function handles exact matches by returning the existing keyword)
+            let existsInStructure = false;
+            function checkExists(arr) {
+               for(let item of arr) {
+                 if (item.type === 'bookmark' && item.id === keyword) {
+                   existsInStructure = true;
+                   return;
+                 }
+                 if (item.type === 'folder' && item.children) {
+                   checkExists(item.children);
+                 }
+               }
+            }
+            checkExists(state.structure);
+            
+            if (!existsInStructure) {
+              currentLevelArray.push({ type: 'bookmark', id: keyword });
+            }
+          }
+        }
+
+        // Start processing from the root
+        processNode(bookmarkTreeNodes[0], state.structure);
+
+        // Save and update UI
+        chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, () => {
+          renderBookmarks();
+          importChromeBtn.textContent = 'Import Chrome Bookmarks';
+          importChromeBtn.disabled = false;
+        });
+      });
+    });
+  }
 
   // Initial load
   loadState();

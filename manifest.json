@@ -3,7 +3,7 @@
   "name": "Keyworder",
   "version": "0.0.1",
   "description": "Save bookmarks with custom keywords and quick access via the omnibox.",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "bookmarks"],
   "omnibox": {
     "keyword": "k"
   },

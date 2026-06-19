@@ -1,3 +1,13 @@
+function escapeXML(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 // Set initial instruction when user types "b "
 chrome.omnibox.onInputStarted.addListener(() => {
   chrome.omnibox.setDefaultSuggestion({
@@ -23,7 +33,7 @@ chrome.omnibox.onInputChanged.addListener((text, suggest) => {
       if (keyword.includes(textLower)) {
         suggestions.push({
           content: keyword,
-          description: `<match>${keyword}</match> - <url>${data.url}</url>`
+          description: `<match>${escapeXML(keyword)}</match> - <url>${escapeXML(data.url)}</url>`
         });
       }
     }
@@ -41,14 +51,14 @@ chrome.omnibox.onInputChanged.addListener((text, suggest) => {
       const bestMatch = suggestions[0];
       // Set the very best match as the default top suggestion
       chrome.omnibox.setDefaultSuggestion({
-        description: `Go to: <match>${bestMatch.content}</match> - <url>${bookmarks[bestMatch.content].url}</url>`
+        description: `Go to: <match>${escapeXML(bestMatch.content)}</match> - <url>${escapeXML(bookmarks[bestMatch.content].url)}</url>`
       });
       
       // Pass the remaining suggestions to the dropdown
       suggest(suggestions.slice(1));
     } else {
       chrome.omnibox.setDefaultSuggestion({
-        description: `Search Google for: <match>${text}</match>`
+        description: `Search Google for: <match>${escapeXML(text)}</match>`
       });
       suggest([]);
     }

@@ -352,6 +352,41 @@ body.dark-mode .delete-btn {
   background-color: var(--del-hover);
 }
 
+.select-btn {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--text-muted);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  border-radius: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select-btn:hover {
+  background-color: var(--secondary-btn-hover);
+}
+
+.select-btn.selected {
+  background-color: var(--primary-btn);
+  color: #ffffff;
+  border-color: var(--primary-btn);
+  transform: scale(1.05);
+}
+
+body.dark-mode .select-btn {
+  color: var(--text-muted);
+  border-color: var(--text-muted);
+}
+
+body.dark-mode .select-btn.selected {
+  color: #202124;
+  background-color: var(--primary-btn);
+  border-color: var(--primary-btn);
+}
+
 #save-status {
   margin-top: 6px;
   font-size: 12px;

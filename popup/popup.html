@@ -29,6 +29,8 @@
       <h4>My Bookmarks</h4>
       <button id="new-folder-btn" class="secondary-btn" style="width: auto; padding: 4px 8px; font-size: 11px;">+ Folder</button>
     </div>
+    <input type="text" id="search-input" placeholder="Search bookmarks..." style="margin-bottom: 8px;">
+    <button id="bulk-delete-btn" class="secondary-btn" style="display: none; margin-bottom: 8px; border-color: #ea4335; color: #ea4335;">Delete Selected</button>
     <ul id="bookmark-list"></ul>
   </div>
 
@@ -39,6 +41,7 @@
       <input type="file" id="import-file" accept=".json" style="display:none">
       <button id="import-btn" class="secondary-btn">Import JSON</button>
     </div>
+    <button id="import-chrome-btn" style="margin-top: 8px;" class="secondary-btn">Import Chrome Bookmarks</button>
   </div>
 
   <script src="Sortable.min.js"></script>
