@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const keywordInput = document.getElementById('keyword-input');
   const urlInput = document.getElementById('url-input');
+  const folderSelect = document.getElementById('folder-select');
   const saveBtn = document.getElementById('save-btn');
   const saveStatus = document.getElementById('save-status');
   const bookmarkList = document.getElementById('bookmark-list');
@@ -93,6 +94,41 @@ document.addEventListener('DOMContentLoaded', () => {
     
     state.structure = parseList(bookmarkList);
     chrome.storage.local.set({ structure: state.structure });
+    updateFolderSelect();
+  }
+
+  function updateFolderSelect() {
+    function getFolders(arr, path = '') {
+      let folders = [];
+      for (let item of arr) {
+        if (item.type === 'folder') {
+          const currentPath = path ? `${path} / ${item.name}` : item.name;
+          folders.push({ id: item.id, name: currentPath });
+          if (item.children) {
+            folders = folders.concat(getFolders(item.children, currentPath));
+          }
+        }
+      }
+      return folders;
+    }
+
+    const folders = getFolders(state.structure);
+    if (folders.length === 0) {
+      folderSelect.style.display = 'none';
+    } else {
+      folderSelect.style.display = 'block';
+      const currentVal = folderSelect.value;
+      folderSelect.innerHTML = '<option value="root">Root (No Folder)</option>';
+      folders.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = f.name;
+        folderSelect.appendChild(opt);
+      });
+      if (currentVal && (currentVal === 'root' || folders.some(f => f.id === currentVal))) {
+        folderSelect.value = currentVal;
+      }
+    }
   }
 
   function renderBookmarks() {
@@ -247,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     initSortable();
+    updateFolderSelect();
   }
 
   function initSortable() {
@@ -272,7 +309,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = prompt("Enter folder name:");
     if (!name) return;
     const folderId = 'folder_' + Date.now();
-    state.structure.unshift({
+    
+    let insertIndex = 0;
+    for (let i = state.structure.length - 1; i >= 0; i--) {
+      if (state.structure[i].type === 'folder') {
+        insertIndex = i + 1;
+        break;
+      }
+    }
+    
+    state.structure.splice(insertIndex, 0, {
       type: 'folder',
       id: folderId,
       name: name,
@@ -314,7 +360,39 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     if (isNew && (!editingKeyword || editingKeyword === keyword)) {
-       state.structure.unshift({ type: 'bookmark', id: keyword });
+       const selectedFolderId = folderSelect.value;
+       
+       function insertBookmarkAfterExisting(arr, keywordId) {
+         let insertIndex = arr.length;
+         for (let i = arr.length - 1; i >= 0; i--) {
+           if (arr[i].type === 'bookmark') {
+             insertIndex = i + 1;
+             break;
+           }
+         }
+         arr.splice(insertIndex, 0, { type: 'bookmark', id: keywordId });
+       }
+
+       if (!selectedFolderId || selectedFolderId === 'root' || folderSelect.style.display === 'none') {
+         insertBookmarkAfterExisting(state.structure, keyword);
+       } else {
+         function addToFolder(arr, targetId) {
+           for (let item of arr) {
+             if (item.type === 'folder' && item.id === targetId) {
+               if (!item.children) item.children = [];
+               insertBookmarkAfterExisting(item.children, keyword);
+               item.isOpen = true; // Open folder to show the new item
+               return true;
+             } else if (item.type === 'folder' && item.children) {
+               if (addToFolder(item.children, targetId)) return true;
+             }
+           }
+           return false;
+         }
+         if (!addToFolder(state.structure, selectedFolderId)) {
+           insertBookmarkAfterExisting(state.structure, keyword);
+         }
+       }
     }
     
     chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, () => {
@@ -440,15 +518,32 @@ document.addEventListener('DOMContentLoaded', () => {
           function addIds(arr) { arr.forEach(i => { if (i.type==='bookmark') existingIds.add(i.id); if (i.children) addIds(i.children); }); }
           addIds(state.structure);
           
-          function filterStructure(arr) {
-            return arr.filter(item => {
-              if (item.type === 'bookmark' && existingIds.has(item.id)) return false;
-              if (item.type === 'folder' && item.children) item.children = filterStructure(item.children);
-              return true;
+          function mergeItems(targetArr, sourceArr) {
+            sourceArr.forEach(sourceItem => {
+              if (sourceItem.type === 'bookmark') {
+                if (!existingIds.has(sourceItem.id)) {
+                  targetArr.push(sourceItem);
+                  existingIds.add(sourceItem.id);
+                }
+              } else if (sourceItem.type === 'folder') {
+                let existingFolder = targetArr.find(t => t.type === 'folder' && t.id === sourceItem.id);
+                if (existingFolder) {
+                  if (sourceItem.children) {
+                    if (!existingFolder.children) existingFolder.children = [];
+                    mergeItems(existingFolder.children, sourceItem.children);
+                  }
+                } else {
+                  let newFolder = { ...sourceItem, children: [] };
+                  if (sourceItem.children) {
+                    mergeItems(newFolder.children, sourceItem.children);
+                  }
+                  targetArr.push(newFolder);
+                }
+              }
             });
           }
-          const newItems = filterStructure(importedData.structure);
-          state.structure = state.structure.concat(newItems);
+          
+          mergeItems(state.structure, importedData.structure);
         } else {
           // Old format
           state.bookmarks = { ...state.bookmarks, ...importedData };
