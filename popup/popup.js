@@ -147,7 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentRenderOp = null;
 
-  function renderBookmarks() {
+  function renderBookmarks(preserveScroll = false) {
+    const scrollPos = preserveScroll ? window.scrollY : 0;
+    
     bookmarkList.innerHTML = '';
     const searchTerm = searchInput.value.trim().toLowerCase();
     
@@ -177,10 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
       keySpan.className = 'bookmark-keyword';
       keySpan.textContent = item.id;
       
-      const urlSpan = document.createElement('span');
+      const urlSpan = document.createElement('a');
       urlSpan.className = 'bookmark-url';
       urlSpan.textContent = data.url;
       urlSpan.title = data.url;
+      urlSpan.href = data.url;
+      urlSpan.target = '_blank';
       
       infoDiv.appendChild(keySpan);
       infoDiv.appendChild(urlSpan);
@@ -378,6 +382,9 @@ document.addEventListener('DOMContentLoaded', () => {
             initSortable();
           }
           updateFolderSelect();
+          if (preserveScroll) {
+            window.scrollTo(0, scrollPos);
+          }
           return;
         }
       }
@@ -568,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
     deleteFolderInternal(folderId);
     selectedItems.delete(folderId);
     updateBulkDeleteBtn();
-    chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, renderBookmarks);
+    chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, () => renderBookmarks(true));
   }
 
   // Delete bookmark internal
@@ -591,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
     deleteBookmarkInternal(keyword);
     selectedItems.delete(keyword);
     updateBulkDeleteBtn();
-    chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, renderBookmarks);
+    chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, () => renderBookmarks(true));
   }
 
   if (bulkDeleteBtn) {
@@ -606,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         selectedItems.clear();
         updateBulkDeleteBtn();
-        chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, renderBookmarks);
+        chrome.storage.local.set({ bookmarks: state.bookmarks, structure: state.structure }, () => renderBookmarks(true));
       }
     });
   }

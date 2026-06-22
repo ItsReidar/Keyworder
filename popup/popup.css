@@ -302,6 +302,13 @@ body.dark-mode .secondary-btn {
   text-overflow: ellipsis;
   max-width: 220px;
   transition: color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.bookmark-url:hover {
+  text-decoration: underline;
+  color: var(--primary-btn);
 }
 
 .bookmark-actions {
